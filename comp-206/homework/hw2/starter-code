@@ -1,0 +1,130 @@
+#!/bin/bash
+
+# This is a bash script!
+# Comments are written with '#' and continue to the end of the line, just like in Python.
+
+# The very first line is not really a comment; it's called the "shebang" line, short for "hash
+# bang", the two symbols at the beginning. The exclamation mark is called a "bang" in programming.
+
+# In a bash script, you write commands just like you're used to on the command-line:
+
+echo 'Hello world!'
+
+# Any command you've seen before -- cp, mv, rm, rmdir, git, ls, cat, grep, cut, sort, uniq, etc. --
+# can be used in a script.
+
+# When you run this program as ./starter-code it will print out "Hello world!"
+
+# To end a script early, you can use the `exit` command, and provide a _status code._
+# This is a number that indicates whether the command succeeded or failed.
+# Zero means success, and anything else means failure.
+
+# exit 0
+
+##### PART 2: variables #####
+
+# To define a variable in bash, use `=` but crucially with no spaces around it!
+# To _use_ the value of a variable, put a `$` before the name of the variable.
+
+name="$USER"
+# ^ Creates a new variable `name` initialized with the value of the variable `USER`.
+
+# Why no spaces? Imagine I had this line instead.
+#
+#     name = "$USER"
+#
+# Bash would understand this as _running a program_ named "name" and giving it two arguments:
+# 1. the string "="
+# 2. the string "jerrin" (in case it was you running the program, it would be your username)
+
+# There are also numbered variables. There are the command-line arguments of the script.
+
+echo $1 $2 $3 $4
+
+# If we run this program as `./starter-code hello world foo bar`
+# Then the program will print out: hello world foo bar
+
+# In other words:
+# $1 would hold "hello"
+# $2 would hold "world"
+# $3 would hold "foo"
+# $4 would hold "bar"
+
+##### PART 3: control flow #####
+
+# the `if` and `while` statements in bash run a _command_ and check whether it succeeds (exits with
+# a status code of 0)
+
+if ls ~
+then
+    echo 'Your home directory exists!'
+else
+    echo 'Uh-oh...'
+fi
+# An if-statement is terminated by the keyword "fi", which is "if" backwards. Seriously.
+
+# Note that the command's output, if any, gets displayed. To prevent that, we can redirect the
+# output.
+
+if ls ~ >/dev/null 2>&1
+then
+    echo 'Your home directory exists!'
+else
+    echo 'Uh oh...'
+fi
+
+# /dev/null is a special file that just ignores anything you write to it. It's like a trash can for
+# command output you don't care about.
+#
+# Recall the syntax `2>&1` means "redirect file descriptor 2 into whatever
+# descriptor 1 currently points to". File descriptor 2 is the standard error
+# stream, and we already redirected file description 1 (stdout) to /dev/null.
+# Therefore in that command, `2>&1` also sends stderr to /dev/null.
+
+# What about checking equality of two strings? Perhaps we want to check if the first command-line
+# argument $1 equals "--help" to print out a helpful message.
+
+# To do this, we use a program called "test" which can do all kinds of tests besides string
+# equality.
+
+if test "$1" = "--help" ; then # use a semicolon to put `then` on the same line as `if`
+    echo "you're not really supposed to run this file, but rather read it."
+fi
+
+# The `test` program sees `=` and performs a string comparison. It exits with code 0 (success) if
+# the strings are equal and with a nonzero code if they're unequal.
+
+# That example can also be written as:
+
+if [ "$1" = "--help" ] ; then
+    echo "helpful message"
+fi
+
+# Indeed there is literally a file /bin/[
+# That's right, there is a program called "open square bracket" and it's the exact same program as
+# "test". The only difference is that it expects its last argument to be "]".
+# Although this _looks_ like special syntax, it's not.
+# Bash is just running a program (called open-square-bracket '[') and checking whether its exit code is 0.
+
+# You might wonder why I put quotes around "$1" in that example.
+# There's a good reason for that.
+# If I didn't put quotes, what if someone did `./starter-code "multiple words"` ?
+# Then `if [ $1 = "--help" ] ` expands into `if [ multiple words = "--help" ] `
+# and `[` will give us an error because it's expecting exactly one argument to come before the `=`.
+
+# But with the quotes, `if [ "$1" = "--help" ]` expands into `if [ "multiple words" = "--help" ]`
+# and there's no issue.
+
+# The best practice is to ALWAYS double-quote variables.
+
+# Single-quotes, on the other hand, prevent variables from being expanded.
+
+echo '$USER'
+
+# will literally print out the string "$USER"
+
+### One more way to check whether a command succeeds ###
+
+# Every time you run a command, bash updates the variable $? (dollar question mark) with the exit
+# code of that command. However, unless you care about the specific value of the exit code, it's
+# more natural to just use the `if` statement to check whether running a command succeeds.

@@ -1,0 +1,25 @@
+#!/bin/bash
+
+if [[ $# -eq 0 ]]; then
+	echo "Nothing requested"
+	exit 0
+fi
+
+base_dir="$HOME/comp-206/homework"
+hw_dir="$base_dir/hw$1"
+repo="fall2025-comp206:hw$1.git"
+
+mkdir -p $base_dir
+
+if [ -d "$hw_dir" ] ; then
+	read -p "Homework $1 directory already exists. Overwrite? [y/n] " answer
+	if [ "$answer" != 'y' ] && [ "$answer" != 'Y' ]; then
+		echo 'Overwrite cancelled'
+		exit 0
+	fi
+	rm -rf "$hw_dir"
+fi
+
+echo 'Overwriting git repo'
+
+git clone "$repo" "$hw_dir"

@@ -1,0 +1,15 @@
+#!/bin/bash
+
+gcc -Wall -o minicalc minicalc.c -lm
+
+if [[ $? -ne 0 ]]; then
+	echo "compilation failed"	
+	exit 1
+fi
+
+
+chmod +x minicalc
+
+echo "compilation successful and minicalc is now executable"
+
+echo "Test 1: minicalc "

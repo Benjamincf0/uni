@@ -1,0 +1,27 @@
+#!/bin/bash
+
+go () {
+	# usage: go DEPTH DIR
+
+	# Define the variables we need in this function as 'local'
+	# otherwise, all variables in bash are global by default.
+	# That will not work well with recursion!
+	local DEPTH=$1
+	local DIR=$2
+	local entry
+	for entry in $DIR/* ; do
+		# Print 4 spaces for each DEPTH level
+		for i in $(seq 1 $DEPTH) ; do
+			echo -n "    "
+		done
+		# seq 1 5 prints out:
+		# 1 2 3 4 5
+		# and is the usual way to make a for loop
+		# over a range of numbers.
+		# Think: why do we use a command substitution with seq there?
+		echo "$entry"
+		[ -d "$entry" ] && go $((DEPTH+1)) "$entry"
+	done
+}
+
+go 0 "$1"

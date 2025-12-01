@@ -1,0 +1,30 @@
+#!/bin/bash
+
+# High or low
+# 1. pick a random number in a range
+# 2. use a loop to prompt the user for input
+# 3. compare the input with the selected number
+# 4. exit the loop or tell the user too high or too low
+
+# usage: ./high-or-low N
+# where N is the upper bound on the range
+
+N=$1
+
+CHOSEN_NUMBER=$(( $RANDOM % $N ))
+
+echo "I have chosen a number between 0 and $((N-1)). Try to guess it."
+
+while read -r -p "Your guess: " USER_GUESS ; do
+	if [ "$USER_GUESS" -eq $CHOSEN_NUMBER ] ; then
+		echo "Congratulations!"
+		exit 0
+	elif [ "$USER_GUESS" -lt $CHOSEN_NUMBER ] ; then
+		echo "Too low!"
+	elif [ "$USER_GUESS" -gt $CHOSEN_NUMBER ] ; then
+		echo "Too high!"
+	else
+		echo "wtf"
+		exit 1
+	fi
+done

@@ -1,0 +1,6 @@
+Q1.1: to create an archive you do tar --create --gzip --file compressed.tar.gz source.
+Q1.2: tar tf archive.tar
+Q1.3: Use tar -xf archive.tar to extract all files into the current directory.
+Q1.4: Into the current directory.
+Q1.5: .tar.gz indicates a tar archive (.tar) that has been compressed with gzip (.gz) to reduce file size. It combines multiple files into one archive and then compresses it.
+Q1.6: A tarbomb is a tar archive that extracts files directly into the current directory instead of a subfolder. Extracting one can be dangerous because it can overwrite existing files or create a messy directory.

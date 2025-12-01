@@ -1,0 +1,15 @@
+#!/bin/bash
+
+mkdir -p ~/comp-206/backups
+
+thedate=$(date +%Y-%m-%dT%H:%M:%S)
+
+thefile="backups/homework-$thedate.tar.gz"
+
+if tar --create --gzip --file "$HOME/comp-206/$thefile" ~/comp-206/homework >/dev/null 2>&1
+then
+	echo "Created backup: $thefile"
+	exit 0
+fi
+
+exit 1

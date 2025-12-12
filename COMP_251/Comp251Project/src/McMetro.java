@@ -47,12 +47,14 @@ public class McMetro {
 
         public ArrayList<String> searchAll(String s) {
             ArrayList<String> out = new ArrayList<>();
-            if (s.length() == 0) return out; // if length is 0, no results...
+            if (s == null) return out;
             TrieNode lastNode = this.search(s);
             if (lastNode == null) return out; // if theres no match just return empty list
 
+            String prefix = (s.length() == 0)? "" : s.substring(0,1).toUpperCase() + s.substring(1).toLowerCase(); // if length is 0, all results...
+
             // now do dfs to get every match to the search prefix
-            this.dfs(lastNode, s.substring(0,1).toUpperCase() + s.substring(1).toLowerCase(), out);
+            this.dfs(lastNode, prefix, out);
             return out;
         }
 
@@ -64,7 +66,8 @@ public class McMetro {
                 if (node.children[letter-'a'] == null) continue;
                 
                 // combine each childs array of wordss
-                this.dfs(node.children[letter-'a'], prefix + letter, out);
+                String newPrefix = prefix.length() < 1 ? (""+letter).toUpperCase() : prefix + letter;
+                this.dfs(node.children[letter-'a'], newPrefix, out);
             }
         }
     }
@@ -73,7 +76,6 @@ public class McMetro {
     McMetro(Track[] tracks, Building[] buildings) {
         // this.tracks = tracks;
         this.tracks = (tracks == null) ? new Track[0] : tracks;
-
 
        // Populate buildings table
         if (buildings != null) {

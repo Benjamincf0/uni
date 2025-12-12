@@ -1,7 +1,4 @@
 import java.util.*;
-
-import javax.swing.plaf.basic.BasicTreeUI.TreeIncrementAction;
-
 import java.lang.Math.*;
 
 public class McMetro {
@@ -18,27 +15,21 @@ public class McMetro {
     };
 
     private class Trie {
-        private TrieNode rootNode;
+        private TrieNode rootNode = new TrieNode();
         private class TrieNode {
-            public Map<Character, TrieNode> children = new HashMap<>();
+            public TrieNode[] children = new TrieNode[26]; // just 26 letters
             public boolean endNode = false;
-            public char symbol;
-
-            TrieNode(char symbol) {
-                this.symbol = symbol;
-            }
-        }
-
-        Trie() {
-            this.rootNode = new TrieNode('|');
         }
 
         public void insert(String s) {
             TrieNode current = this.rootNode;
 
-            for (char c : s.toLowerCase().toCharArray()) {
-                current.children.putIfAbsent(c, new TrieNode(c));
-                current = current.children.get(c);
+            for (char letter : s.toLowerCase().toCharArray()) {
+                if (letter -'a' > 25 || letter-'a' < 0) System.err.println("uhmmm thats not a normal letter");
+                if (current.children[letter-'a'] == null) {
+                    current.children[letter-'a'] = new TrieNode();
+                }
+                current = current.children[letter-'a'];
             }
             current.endNode = true;
         }
@@ -46,31 +37,36 @@ public class McMetro {
         private TrieNode search(String s) {
             TrieNode current = this.rootNode;
 
-            for (char c : s.toCharArray()) {
-                current = current.children.get(c);
-                if (current == null) {
-                    return null;
-                }
+            for (char letter : s.toLowerCase().toCharArray()) {
+                if (letter -'a' > 25 || letter-'a' < 0) System.err.println("uhmmm thats not a normal letter 2");
+                current = current.children[letter-'a'];
+                if (current == null) return null;
             }
             return current;
         }
 
         public ArrayList<String> searchAll(String s) {
             ArrayList<String> out = new ArrayList<>();
+            if (s.length() == 0) return out; // if length is 0, no results...
             TrieNode lastNode = this.search(s);
-            if (lastNode == null) return out;
+            if (lastNode == null) return out; // if theres no match just return empty list
 
-            // now do dfs to get everything else from here
-            ArrayList<TrieNode> stack = new ArrayList<>();
-            stack.add(lastNode);
-
-            while (stack.size() > 0) {
-                TrieNode currNode = stack.removeLast();
-                
-            }
-
+            // now do dfs to get every match to the search prefix
+            this.dfs(lastNode, s.substring(0,1).toUpperCase() + s.substring(1).toLowerCase(), out);
+            return out;
         }
 
+        private void dfs(TrieNode node, String prefix, ArrayList<String> out) {
+            if (node.endNode) out.add(prefix);
+
+            // iterate for each child
+            for (char letter = 'a'; letter <= 'z'; letter++) {
+                if (node.children[letter-'a'] == null) continue;
+                
+                // combine each childs array of wordss
+                this.dfs(node.children[letter-'a'], prefix + letter, out);
+            }
+        }
     }
 
     // You may initialize anything you need in the constructor
@@ -173,12 +169,13 @@ public class McMetro {
     // Returns all passengers in the system whose names start with firstLetters
     ArrayList<String> searchForPassengers(String firstLetters) {
         // TODO: your implementation here
-        return new ArrayList<>();
+        return this.passengerTrie.searchAll(firstLetters);
     }
 
     // Return how many ticket checkers will be hired
     static int hireTicketCheckers(int[][] schedule) {
         // TODO: your implementation here
+        
         return 0;
     }
 

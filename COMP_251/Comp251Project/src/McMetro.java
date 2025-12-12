@@ -98,6 +98,7 @@ public class McMetro {
         if (!buildingTable.containsKey(start) || !buildingTable.containsKey(end)) return 0; // input validation...
 
         List<Track> startBuildingTracks = adjacencyList.get(start);
+        if (startBuildingTracks == null) return 0; // this is in case theres no value in the hashmap for this building
         int maxTrackCap = 0;
         for (Track track : startBuildingTracks) {
             if (track.endBuildingId().equals(end)) {

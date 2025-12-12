@@ -71,21 +71,24 @@ public class McMetro {
 
     // You may initialize anything you need in the constructor
     McMetro(Track[] tracks, Building[] buildings) {
-       this.tracks = tracks;
+        // this.tracks = tracks;
+        this.tracks = (tracks == null) ? new Track[0] : tracks;
+
 
        // Populate buildings table
-       for (Building building : buildings) {
-           buildingTable.putIfAbsent(building.id(), building);
-           adjacencyList.putIfAbsent(building.id(), new ArrayList<>());
-       }
+        if (buildings != null) {
+            for (Building building : buildings) {
+                buildingTable.putIfAbsent(building.id(), building);
+                adjacencyList.putIfAbsent(building.id(), new ArrayList<>());
+            }
+        }
 
        // Populate adjacency lists
        for (Track track: tracks) {
+            if (track == null) continue;
             BuildingID buildingID1 = track.startBuildingId();
-            // BuildingID buildingID2 = track.endBuildingId();
-
+            adjacencyList.putIfAbsent(buildingID1, new ArrayList<>()); // maybe needed???
             adjacencyList.get(buildingID1).add(track);
-            // adjacencyList.get(buildingID2).add(track);
        }
     }
 
@@ -175,8 +178,21 @@ public class McMetro {
     // Return how many ticket checkers will be hired
     static int hireTicketCheckers(int[][] schedule) {
         // TODO: your implementation here
+        if (schedule.length == 0) return 0;
         
-        return 0;
+        Arrays.sort(schedule, (a, b) -> Integer.compare(a[1], b[1])); // O(nlogn)
+        
+        int numCheckers = 1;
+        int[] prevShift = schedule[0];
+
+        for (int i = 1; i < schedule.length; i++) {
+            int[] currShift = schedule[i];
+
+            if (currShift[0] < prevShift[1]) continue;
+            numCheckers ++;
+            prevShift = currShift;
+        }
+        return numCheckers;
     }
 
     private double getGoodness(Track track) {

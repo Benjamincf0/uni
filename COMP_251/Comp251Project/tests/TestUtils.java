@@ -3,6 +3,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Random;
 
+import static org.junit.Assert.fail;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -135,7 +136,9 @@ public class TestUtils {
         McMetro mcMetro = bestMetroBuilder("1,2,1", 1);
         mcMetro.addPassengers(passengers);
         String[] matches = mcMetro.searchForPassengers(firstLetters).toArray(new String[0]);
+        // System.out.println("We expected this: " + expected +"\n"+ "We got found this: " + matches);
         assertArrayEquals(expected, matches);
+        // fail("We expected this: " + expected +"\n"+ "We got found this: " + matches);
     }
 
     static void trackIdsEqual(int[] actual, TrackID[] tarr) {

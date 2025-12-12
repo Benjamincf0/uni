@@ -68,6 +68,58 @@ class McMetroTest {
         TestUtils.checkPassengerSearch(passengers, expected, "Al");
     }
 
+    @Test
+    void searchForPassengers2() {
+        String[] passengers = {"Alex", "MoeLester", "Ally"};
+        String[] expected = {"Moelester"};
+        TestUtils.checkPassengerSearch(passengers, expected, "M");
+    }
+
+    @Test
+    void searchForPassengers3() {
+        String[] passengers = {"Charlie", "Charlie", "Kirky", "George", "CHRONAR"};
+        String[] expected = {"Charlie", "Chronar"};
+        TestUtils.checkPassengerSearch(passengers, expected, "CH");
+    }
+
+    @Test
+    void searchForPassengers4() {
+        String[] passengers = {"Charlie", "Charlie", "Kirky", "George", "CHRONAR"};
+        String[] expected = {"Chronar"};
+        TestUtils.checkPassengerSearch(passengers, expected, "CHr");
+    }
+
+    @Test
+    void searchForPassengers5() {
+        String[] passengers = {"Charlie", "Charlie", "Kirky", "George", "CHRONAR"};
+        String[] expected = {};
+        TestUtils.checkPassengerSearch(passengers, expected, "CHra");
+    }
+
+    @Test
+    void searchForPassengers6() {
+        String[] passengers = {"", "Charlie", "Kirky", "George", "CHRONAR"};
+        String query = "";
+        String[] expected = {"", "Charlie", "Chronar", "George", "Kirky"};
+        TestUtils.checkPassengerSearch(passengers, expected, query);
+    }
+
+    @Test
+    void searchForPassengers7() {
+        String[] passengers = {"", "George", "CHRONAR", "GeorgeinA"};
+        String query = "George";
+        String[] expected = {"George", "Georgeina"};
+        TestUtils.checkPassengerSearch(passengers, expected, query);
+    }
+
+    @Test
+    void searchForPassengers8() {
+        String[] passengers = {"", "George", "CHRONAR", "GeorgeinA"};
+        String query = null;
+        String[] expected = {};
+        TestUtils.checkPassengerSearch(passengers, expected, query);
+    }
+
 
     @Test
     void hireTicketCheckers() {

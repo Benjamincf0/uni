@@ -97,23 +97,9 @@ public class McMetro {
     // Maximum number of passengers that can be transported from start to end
     int maxPassengers(BuildingID start, BuildingID end) {
         // TODO: your implementation here
-        if (!buildingTable.containsKey(start) || !buildingTable.containsKey(end)) return 0; // input validation...
+        
 
-        List<Track> startBuildingTracks = adjacencyList.get(start);
-        if (startBuildingTracks == null) return 0; // this is in case theres no value in the hashmap for this building
-        int maxTrackCap = 0;
-        for (Track track : startBuildingTracks) {
-            if (track.endBuildingId().equals(end)) {
-                maxTrackCap =  Math.max(maxTrackCap, track.capacity());
-            }
-        }
-
-        int occupantsStart = buildingTable.get(start).occupants();
-        int occupantsEnd = buildingTable.get(end).occupants();
-
-        int minOccupants = Math.min(occupantsStart, occupantsEnd);
-
-        return Math.min(minOccupants, maxTrackCap);
+        return 0;
     }
 
     // Returns a list of trackIDs that connect to every building maximizing total network capacity taking cost into account

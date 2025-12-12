@@ -60,7 +60,15 @@ public class McMetro {
             TrieNode lastNode = this.search(s);
             if (lastNode == null) return out;
 
-            
+            // now do dfs to get everything else from here
+            ArrayList<TrieNode> stack = new ArrayList<>();
+            stack.add(lastNode);
+
+            while (stack.size() > 0) {
+                TrieNode currNode = stack.removeLast();
+                
+            }
+
         }
 
     }

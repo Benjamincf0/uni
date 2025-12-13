@@ -1,10 +1,9 @@
 import java.util.*;
-import java.lang.Math.*;
+// import java.lang.Math.*;
 
 public class McMetro {
     protected Track[] tracks;
     protected HashMap<BuildingID, Building> buildingTable = new HashMap<>();
-    private HashMap<BuildingID, ArrayList<Track>> adjacencyList = new HashMap<>();
     private Trie passengerTrie = new Trie();
 
     private record goodTrack(double goodness, Track track) implements Comparable<goodTrack> {
@@ -81,25 +80,119 @@ public class McMetro {
         if (buildings != null) {
             for (Building building : buildings) {
                 buildingTable.putIfAbsent(building.id(), building);
-                adjacencyList.putIfAbsent(building.id(), new ArrayList<>());
             }
         }
-
-       // Populate adjacency lists
-       for (Track track: tracks) {
-            if (track == null) continue;
-            BuildingID buildingID1 = track.startBuildingId();
-            adjacencyList.putIfAbsent(buildingID1, new ArrayList<>()); // maybe needed???
-            adjacencyList.get(buildingID1).add(track);
-       }
     }
 
     // Maximum number of passengers that can be transported from start to end
     int maxPassengers(BuildingID start, BuildingID end) {
-        // TODO: your implementation here
-        
+        // input validation....
+        if (start.equals(end) || !buildingTable.containsKey(start) || !buildingTable.containsKey(end)) {
+            return 0;
+        }
 
-        return 0;
+        // create the residual graph to store connected building and updated capacity
+        HashMap<BuildingID, HashMap<BuildingID, Integer>> residualGraph = new HashMap<>();
+        // {<key>: <value>
+        //  b1: {b2: c1, b5: c2, b6: c3}
+        //  b2: {b5: c4, b3: c5, b1: c6}
+        //  b3: {b1: c7, b3: c8, b1: c9}
+        //  .
+        //  .
+        //  .
+        //  b6: {b3: c10, b2: c11, b1: c12}
+        // }
+
+        for (Track track : tracks) {
+            if (track == null) continue;
+            BuildingID u = track.startBuildingId();
+            BuildingID v = track.endBuildingId();
+            int capacity = getCapacity(track);
+
+            // computeIfAbsent tries to get the value for key u in the hashmap.
+            // if theres no value for key u, it adds the result of the lamda function to the hashmap for key u
+            // it any case it returns the value of the hashmap for key u.
+            residualGraph.computeIfAbsent(u, this::newHashMap) // here we get an entry like: {b2: c1, b5: c2, b6: c3}
+                         .merge(v, capacity, Integer::sum); // incase theres 2 parralel edges in same direction
+
+             // initialize the reverse edge with 0 if its not already there
+            residualGraph.computeIfAbsent(v, this::newHashMap)
+                         .putIfAbsent(u, 0);
+        }
+
+
+        int maxFlow = 0;
+        // hold the path from bfs
+        HashMap<BuildingID, BuildingID> parentMap = new HashMap<>();
+
+
+        while (bfs(residualGraph, start, end, parentMap)) {
+
+            int pathFlow = Integer.MAX_VALUE;
+            BuildingID currID = end;
+            while (!currID.equals(start)) {
+                BuildingID prev = parentMap.get(currID);
+
+                int availableCapacity = residualGraph.get(prev).get(currID);
+
+                pathFlow = Math.min(pathFlow, availableCapacity);
+
+                currID = prev;
+            }
+
+
+            currID = end;
+            while (!currID.equals(start)) {
+                BuildingID prev = parentMap.get(currID);
+
+                // reduce forward path
+                int oldFwd = residualGraph.get(prev).get(currID);
+                residualGraph.get(prev).put(currID, oldFwd - pathFlow);
+
+                // reduce reverse path
+                int oldRev = residualGraph.get(currID).get(prev);
+                residualGraph.get(currID).put(prev, oldRev + pathFlow);
+
+                currID = prev;
+            }
+
+            maxFlow += pathFlow;
+        }
+
+        return maxFlow;
+    }
+
+
+    private boolean bfs(HashMap<BuildingID, HashMap<BuildingID, Integer>> resGraph, 
+                        BuildingID s, BuildingID t, 
+                        HashMap<BuildingID, BuildingID> parentMap) {
+        parentMap.clear();
+        HashSet<BuildingID> visited = new HashSet<>();
+        Queue<BuildingID> queue = new LinkedList<>();
+
+        // add source node
+        queue.add(s);
+        visited.add(s);
+
+        while (!queue.isEmpty()) {
+            BuildingID u = queue.poll();
+            if (u.equals(t)) return true;
+
+            HashMap<BuildingID, Integer> neighbors = resGraph.get(u);
+            if (neighbors == null) continue;
+
+            for (Map.Entry<BuildingID, Integer> entry : neighbors.entrySet()) {
+                BuildingID v = entry.getKey();
+                int cap = entry.getValue();
+
+                if (!visited.contains(v) && cap > 0) {
+                    parentMap.put(v, u);
+                    visited.add(v);
+                    queue.add(v);
+                }
+            }
+        }
+        return false;
     }
 
     // Returns a list of trackIDs that connect to every building maximizing total network capacity taking cost into account
@@ -191,4 +284,27 @@ public class McMetro {
                                                             buildingTable.get(track.endBuildingId()).occupants()
                                                         )) / ((double) track.cost());
     }
+
+    private int getCapacity(Track track) {
+        // get buildings from track
+        BuildingID u = track.startBuildingId();
+        BuildingID v = track.endBuildingId();
+
+
+        // compute each track's capacity
+        int uOccupants = buildingTable.get(u).occupants();
+        int vOccupants = buildingTable.get(v).occupants();
+        int capacity = Math.min(track.capacity(), Math.min(uOccupants, vOccupants));
+        return capacity;
+    }
+
+    private HashMap<BuildingID, Integer> newHashMap(BuildingID key) {
+        return new HashMap<>();
+    }
 }
+
+
+// REFERENCES:
+// https://www.youtube.com/watch?v=VbeTl1gG4l4
+// https://www.youtube.com/watch?v=rlftCrW8t9s
+// 

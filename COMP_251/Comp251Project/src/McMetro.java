@@ -1,5 +1,5 @@
 import java.util.*;
-// import java.lang.Math.*;
+
 
 public class McMetro {
     protected Track[] tracks;
@@ -16,7 +16,7 @@ public class McMetro {
     private class Trie {
         private TrieNode rootNode = new TrieNode();
         private class TrieNode {
-            public TrieNode[] children = new TrieNode[26]; // just 26 letters
+            public TrieNode[] children = new TrieNode[26]; 
             public boolean endNode = false;
         }
 
@@ -48,11 +48,11 @@ public class McMetro {
             ArrayList<String> out = new ArrayList<>();
             if (s == null) return out;
             TrieNode lastNode = this.search(s);
-            if (lastNode == null) return out; // if theres no match just return empty list
+            if (lastNode == null) return out; 
 
-            String prefix = (s.length() == 0)? "" : s.substring(0,1).toUpperCase() + s.substring(1).toLowerCase(); // if length is 0, all results...
+            String prefix = (s.length() == 0)? "" : s.substring(0,1).toUpperCase() + s.substring(1).toLowerCase(); 
 
-            // now do dfs to get every match to the search prefix
+            
             this.dfs(lastNode, prefix, out);
             return out;
         }
@@ -60,23 +60,23 @@ public class McMetro {
         private void dfs(TrieNode node, String prefix, ArrayList<String> out) {
             if (node.endNode) out.add(prefix);
 
-            // iterate for each child
+            
             for (char letter = 'a'; letter <= 'z'; letter++) {
                 if (node.children[letter-'a'] == null) continue;
                 
-                // combine each childs array of wordss
+                
                 String newPrefix = prefix.length() < 1 ? (""+letter).toUpperCase() : prefix + letter;
                 this.dfs(node.children[letter-'a'], newPrefix, out);
             }
         }
     }
 
-    // You may initialize anything you need in the constructor
+    
     McMetro(Track[] tracks, Building[] buildings) {
-        // this.tracks = tracks;
+        
         this.tracks = (tracks == null) ? new Track[0] : tracks;
 
-       // Populate buildings table
+       
         if (buildings != null) {
             for (Building building : buildings) {
                 buildingTable.putIfAbsent(building.id(), building);
@@ -84,24 +84,24 @@ public class McMetro {
         }
     }
 
-    // Maximum number of passengers that can be transported from start to end
+    
     int maxPassengers(BuildingID start, BuildingID end) {
-        // input validation....
+        
         if (start.equals(end) || !buildingTable.containsKey(start) || !buildingTable.containsKey(end)) {
             return 0;
         }
 
-        // create the residual graph to store connected building and updated capacity
+        
         HashMap<BuildingID, HashMap<BuildingID, Integer>> residualGraph = new HashMap<>();
-        // {<key>: <value>
-        //  b1: {b2: c1, b5: c2, b6: c3}
-        //  b2: {b5: c4, b3: c5, b1: c6}
-        //  b3: {b1: c7, b3: c8, b1: c9}
-        //  .
-        //  .
-        //  .
-        //  b6: {b3: c10, b2: c11, b1: c12}
-        // }
+        
+        
+        
+        
+        
+        
+        
+        
+        
 
         for (Track track : tracks) {
             if (track == null) continue;
@@ -109,20 +109,20 @@ public class McMetro {
             BuildingID v = track.endBuildingId();
             int capacity = getCapacity(track);
 
-            // computeIfAbsent tries to get the value for key u in the hashmap.
-            // if theres no value for key u, it adds the result of the lamda function to the hashmap for key u
-            // it any case it returns the value of the hashmap for key u.
-            residualGraph.computeIfAbsent(u, this::newHashMap) // here we get an entry like: {b2: c1, b5: c2, b6: c3}
-                         .merge(v, capacity, Integer::sum); // incase theres 2 parralel edges in same direction
+            
+            
+            
+            residualGraph.computeIfAbsent(u, this::newHashMap) 
+                         .merge(v, capacity, Integer::sum); 
 
-             // initialize the reverse edge with 0 if its not already there
+             
             residualGraph.computeIfAbsent(v, this::newHashMap)
                          .putIfAbsent(u, 0);
         }
 
 
         int maxFlow = 0;
-        // hold the path from bfs
+        
         HashMap<BuildingID, BuildingID> parentMap = new HashMap<>();
 
 
@@ -145,11 +145,11 @@ public class McMetro {
             while (!currID.equals(start)) {
                 BuildingID prev = parentMap.get(currID);
 
-                // reduce forward path
+                
                 int oldFwd = residualGraph.get(prev).get(currID);
                 residualGraph.get(prev).put(currID, oldFwd - pathFlow);
 
-                // reduce reverse path
+                
                 int oldRev = residualGraph.get(currID).get(prev);
                 residualGraph.get(currID).put(prev, oldRev + pathFlow);
 
@@ -170,7 +170,7 @@ public class McMetro {
         HashSet<BuildingID> visited = new HashSet<>();
         Queue<BuildingID> queue = new LinkedList<>();
 
-        // add source node
+        
         queue.add(s);
         visited.add(s);
 
@@ -195,17 +195,9 @@ public class McMetro {
         return false;
     }
 
-    // Returns a list of trackIDs that connect to every building maximizing total network capacity taking cost into account
+    
     TrackID[] bestMetroSystem() {
-        // TODO: your implementation here
-        // first i need to compute the "goodness" of every track.
-        // then i sort the tracks in order of their goodness.
-        // then i init a disjoint set, where each building is in its own set.
-        // i init a trackID arrayList that will serve as my return.
-        // then i need to loop through each track from most to least good.
-        //      for each track, i check if their start and end nodes are part of the same set.
-        //          if yes: i dont choose this track
-        //          otherwise: i add the trackID to my array of tracks
+        
         goodTrack[] goodTracks = new goodTrack[tracks.length];
 
         for (int i = 0; i < tracks.length; i++) {
@@ -238,31 +230,31 @@ public class McMetro {
         return selectedTracks;
     }
 
-    // Adds a passenger to the system
+    
     void addPassenger(String name) {
-        // TODO: your implementation here
+        
         this.passengerTrie.insert(name);
     }
 
-    // Do not change this
+    
     void addPassengers(String[] names) {
         for (String s : names) {
             addPassenger(s);
         }
     }
 
-    // Returns all passengers in the system whose names start with firstLetters
+    
     ArrayList<String> searchForPassengers(String firstLetters) {
-        // TODO: your implementation here
+        
         return this.passengerTrie.searchAll(firstLetters);
     }
 
-    // Return how many ticket checkers will be hired
+    
     static int hireTicketCheckers(int[][] schedule) {
-        // TODO: your implementation here
+        
         if (schedule.length == 0) return 0;
         
-        Arrays.sort(schedule, (a, b) -> Integer.compare(a[1], b[1])); // O(nlogn)
+        Arrays.sort(schedule, (a, b) -> Integer.compare(a[1], b[1])); 
         
         int numCheckers = 1;
         int[] prevShift = schedule[0];
@@ -286,12 +278,12 @@ public class McMetro {
     }
 
     private int getCapacity(Track track) {
-        // get buildings from track
+        
         BuildingID u = track.startBuildingId();
         BuildingID v = track.endBuildingId();
 
 
-        // compute each track's capacity
+        
         int uOccupants = buildingTable.get(u).occupants();
         int vOccupants = buildingTable.get(v).occupants();
         int capacity = Math.min(track.capacity(), Math.min(uOccupants, vOccupants));
@@ -304,7 +296,6 @@ public class McMetro {
 }
 
 
-// REFERENCES:
-// https://www.youtube.com/watch?v=VbeTl1gG4l4
-// https://www.youtube.com/watch?v=rlftCrW8t9s
-// 
+
+
+

@@ -1,3 +1,5 @@
+let compose (f : 'b -> 'c) (g : 'a -> 'b) : 'a -> 'c =
+  fun x -> f (g x)
 
 let double x = 2 * x
 let increment x = x + 1

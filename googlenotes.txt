@@ -1,0 +1,37 @@
+Resume:
+
+Good examples:
+Rolled a service out to 10k internal users and saw 100 queries per second QPS on average.
+
+Bad examples:
+
+
+Technical interview:
+Restate the question in your words to confirm your understanding, don’t start coding right away.
+Ask clarifying questions! 
+Look at the bigger picture
+Draw out images to visualize solution and explain your thought process
+Explain why the naive solution doesnt work
+If working in silence is how you process best, call it out, and then summarize your thought process once ready
+Be nice & normal.
+
+They value candidates that thrive w ambiguity.
+Googlers tackle problems that are seldom clearly defined
+The most logical solution isn’t necessarily the best one
+Googlers analyze problems by taking into account all dimensions and layers. Not just the surface level
+For you: ask questions and feel free to explore alternate approaches to what you’re solving.
+
+Your CV needs a good narrative, tailored to the specific role and company you're applying for.
+When applying to google and elsewhere, have an idea of your why? what products wuld you want to work on,
+what attracts to that company or team specifically?
+Be sure to investigate many different roles in tech to see if SWE is really the best fit for you (options: solutions engineer, security engineer, customer support engineer, infra, SRE, et cetera)
+
+Resources:
+- Google's technical development guide
+
+Create filters to apply to jobs when they come out.
+
+Do tutoring to learn how to explain stuff.
+
+Make different resumes variations
+ex: SWE vs ML

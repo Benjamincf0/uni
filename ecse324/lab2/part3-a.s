@@ -11,9 +11,9 @@ bl sort // go!
 stop:
 b stop
 // Recursive merge sort of signed bytes, in place using element shifts.
-// No merge buffer; the stack only holds saved recursive-call state.
-// pre-- A1: array address, A2: length
-// post- A1: original array address, with elements sorted ascending
+// pre-- A1: Address of array of signed bytes to be sorted
+// pre-- A2: Number of elements in array
+// post- A1: Address of sorted array
 sort:
     CMP A2, #1
     BXLE LR

@@ -10,7 +10,7 @@ ldr A2, N // get the number of things in Stuff
 bl sort // go!
 stop:
 b stop
-// Recursive merge sort of signed bytes, in place using element shifts.
+// Recursive merge sort in place.
 // pre-- A1: Address of array of signed bytes to be sorted
 // pre-- A2: Number of elements in array
 // post- A1: Address of sorted array
@@ -66,21 +66,21 @@ mergeLoop:
 
     LDRSB R3, [array, i]
     LDRSB value, [array, j]
-    CMP R3, value              // compare signed bytes
-    BLE advanceLeft            // a[i] <= a[j]: already in order
+    CMP R3, value
+    BLE advanceLeft // a[i] <= a[j]: already in order
 
     MOV k, j
 shiftLoop:
     CMP k, i
     BLE insertValue
     ADD R0, array, k
-    LDRB R3, [R0, #-1]         // a[k - 1]
-    STRB R3, [R0]              // a[k] = a[k - 1]
+    LDRB R3, [R0, #-1]// a[k - 1]
+    STRB R3, [R0] // a[k] = a[k - 1]
     SUB k, k, #1
     B shiftLoop
 insertValue:
     STRB value, [array, i]
-    ADD mid, mid, #1           // left half has grown
+    ADD mid, mid, #1// left half has grown
     ADD j, j, #1
 advanceLeft:
     ADD i, i, #1

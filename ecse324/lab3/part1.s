@@ -54,7 +54,6 @@ HEX_helper_ASM_:
  loopEnd:
  BX LR
 
-
 HEX_write_ASM:
  LDR A3, =HEX_CODES
  LDRB A2, [A3, A2]
@@ -67,3 +66,11 @@ HEX_flood_ASM:
 HEX_clear_ASM:
  MOV A2, #0x00
  B HEX_helper_ASM_
+
+
+// Push Button Driver
+.equ PB_ADDR, 0xFF200050
+read_PB_data_ASM:
+ LDR A2, =PB_ADDR // load the address of push button state
+ LDR A1, [A2] // read push button state
+ BX LR

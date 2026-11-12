@@ -87,8 +87,11 @@ PB_data_is_pressed_ASM:
  MOVNE A1, #1
  BX LR
 
+.equ PB_EDGE_ADDR, 0xFF20005C
 read_PB_edgecp_ASM:
- // TODO
+ LDR A2, =PB_EDGE_ADDR // load the address of push button state
+ LDR A1, [A2] // read push button state
+ BX LR
 
 PB_edgecp_is_pressed_ASM:
  // TODO

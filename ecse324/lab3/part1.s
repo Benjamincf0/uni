@@ -111,8 +111,13 @@ PB_clear_edgecp_ASM:
  BX LR
 
 
+.equ PB_INT_ADDR, 0xFF200058
 enable_PB_INT_ASM:
- // TODO
+ LDR A2, =PB_INT_ADDR // load the address
+ LDR A3, [A2]
+ ORR A3, A3, A1
+ STR A3, [A2]
+ BX LR
 
 disable_PB_INT_ASM:
  // TODO

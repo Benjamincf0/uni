@@ -120,4 +120,8 @@ enable_PB_INT_ASM:
  BX LR
 
 disable_PB_INT_ASM:
- // TODO
+ LDR A2, =PB_INT_ADDR // load the address
+ LDR A3, [A2]
+ BIC A3, A3, A1 // A3 = A3 AND NOT A1
+ STR A3, [A2]
+ BX LR

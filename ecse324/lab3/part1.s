@@ -1,5 +1,23 @@
 .global _start
 _start:
+ MOV A2, #0xC
+ MOV A1, #32
+ BL HEX_write_ASM
+ MOV A2, #0x0
+ MOV A1, #16
+ BL HEX_write_ASM
+ MOV A2, #0xF
+ MOV A1, #8
+ BL HEX_write_ASM
+ MOV A2, #0xF
+ MOV A1, #4
+ BL HEX_write_ASM
+ MOV A2, #0xE
+ MOV A1, #2
+ BL HEX_write_ASM
+ MOV A2, #0xE
+ MOV A1, #1
+ BL HEX_write_ASM
 loop:
  BL read_slider_switches_ASM
  BL write_LEDs_ASM

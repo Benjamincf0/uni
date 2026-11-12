@@ -104,7 +104,12 @@ PB_edgecp_is_pressed_ASM:
  BX LR
 
 PB_clear_edgecp_ASM:
- // TODO
+ PUSH {LR}
+ BL read_PB_edgecp_ASM
+ POP {LR}
+ STR A1, [A2]
+ BX LR
+
 
 enable_PB_INT_ASM:
  // TODO

@@ -94,7 +94,14 @@ read_PB_edgecp_ASM:
  BX LR
 
 PB_edgecp_is_pressed_ASM:
- // TODO
+ MOV A2, A1 // save index.
+ PUSH {LR, A2}
+ BL read_PB_edgecp_ASM // writes data into A1.
+ POP {LR, A2}
+ TST A2, A1 // check the ith button is ON.
+ MOVEQ A1, #0
+ MOVNE A1, #1
+ BX LR
 
 PB_clear_edgecp_ASM:
  // TODO

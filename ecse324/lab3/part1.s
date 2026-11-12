@@ -74,3 +74,30 @@ read_PB_data_ASM:
  LDR A2, =PB_ADDR // load the address of push button state
  LDR A1, [A2] // read push button state
  BX LR
+
+PB_data_is_pressed_ASM:
+ MOV A2, A1 // save index.
+ PUSH {LR, A2}
+ BL read_PB_data_ASM // writes data into A1.
+ POP {LR, A2}
+ // MOV A3, #1 // bitmask
+ // LSL A3, A3, A2 // mask for 1 at the ith button.
+ TST A2, A1 // check the ith button is ON.
+ MOVEQ A1, #0
+ MOVNE A1, #1
+ BX LR
+
+read_PB_edgecp_ASM:
+ // TODO
+
+PB_edgecp_is_pressed_ASM:
+ // TODO
+
+PB_clear_edgecp_ASM:
+ // TODO
+
+enable_PB_INT_ASM:
+ // TODO
+
+disable_PB_INT_ASM:
+ // TODO

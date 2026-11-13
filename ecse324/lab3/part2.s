@@ -241,6 +241,12 @@ KEY_ISR:
  BX LR
 
 
+// Speed levels 0-4: slowest to fastest.
+SPEED_LOADS:
+ .word 200000000, 100000000, 50000000, 25000000, 12500000
+SPEED_LEDS:
+ .word 0x003, 0x00F, 0x03F, 0x0FF, 0x3FF
+
 // part 1 stuff:
 HEX_CODES:
  .byte 0b00111111, 0b00000110, 0b01011011, 0b01001111 // 0, 1, 2, 3

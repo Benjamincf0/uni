@@ -33,7 +33,7 @@ _start:
  BL set_speed
 
  MOV R5, #0 // start at first character
- MOV R6, #1 // +1 = left, -1 = right
+ MOV R6, #1 // +1/-1 <=> left/rigth
  MOV R7, #0 // 0 = moving, 1 = paused
  MOV R4, #6 // current message length. luckily display_hex supports variable length ;)
  LDR R9, =MSG_C0FFEE // current message
@@ -148,7 +148,7 @@ draw_message:
  BL display_hex // show the shifted message
  B IDLE
 
-set_speed:
+set_speed: // R8: speed level (0-4)
  PUSH {LR}
  LDR A3, =SPEED_LOADS
  LDR A1, [A3, R8, LSL #2] // timer load for this speed
@@ -157,7 +157,7 @@ set_speed:
  BL show_speed_LEDs
  POP {PC}
 
-show_speed_LEDs:
+show_speed_LEDs: // R8: speed level (0-4)
  LDR A3, =SPEED_LEDS
  LDR A1, [A3, R8, LSL #2]
  B write_LEDs_ASM
@@ -196,10 +196,8 @@ CONFIG_GIC:
 * We configure only the Interrupt Set Enable Registers (ICDISERn) and
 * Interrupt Processor Target Registers (ICDIPTRn). The default (reset)
 * values are used for other registers in the GIC
-* Arguments: R0 = Interrupt ID, N
-* R1 = CPU target
 */
-CONFIG_INTERRUPT:
+CONFIG_INTERRUPT: // R0: interrupt ID, R1: CPU target bits
  PUSH {R4-R5, LR}
 /* Configure Interrupt Set-Enable Registers (ICDISERn).
 * reg_offset = (integer_div(N / 32) * 4
@@ -385,7 +383,7 @@ display_hex: // A1: message, A2: msg length, R5: first character
 // HEX Display Driver
 .equ SEG_ADDR1, 0xFF200020
 .equ SEG_ADDR2, 0xFF200030
-HEX_helper_ASM_:
+HEX_helper_ASM_: // A1: HEX mask, A2: segment pattern
  MOV A3, #1 // Filter...
  LDR A4, =SEG_ADDR1
  loop2:
@@ -407,21 +405,21 @@ HEX_helper_ASM_:
  loopEnd:
  BX LR
 
-HEX_write_ASM:
+HEX_write_ASM: // A1: HEX mask, A2: hex digit (0-F)
  LDR A3, =HEX_CODES
  LDRB A2, [A3, A2]
  B HEX_helper_ASM_
 
-HEX_flood_ASM:
+HEX_flood_ASM: // A1: HEX mask
  MOV A2, #0x7F
  B HEX_helper_ASM_
 
-HEX_clear_ASM:
+HEX_clear_ASM: // A1: HEX mask
  MOV A2, #0x00
  B HEX_helper_ASM_
 
 .equ LED_ADDR, 0xFF200000
-write_LEDs_ASM:
+write_LEDs_ASM: // A1: LED bits
  LDR A2, =LED_ADDR
  STR A1, [A2]
  BX LR

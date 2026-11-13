@@ -33,6 +33,7 @@ _start:
  mov A2, #(0b001 | 0b010 | 0b100) // starts, auto-reload, interrupts
  bl ARM_TIM_config_ASM
  MOV R5, #0 // start at first character
+ MOV R6, #1 // +1 = left, -1 = right
  MOV R7, #0 // 0 = moving, 1 = paused
  LDR A1, =MSG_C0FFEE
  MOV A2, #6
@@ -48,6 +49,12 @@ IDLE:
  BEQ check_timer // no button event => check timer.
  MOV A3, #0
  STR A3, [A2] // clear the button flag
+ CMP R7, #0
+ bne check_pause // pb2 does nothing while paused
+ tst a1, #0x04 // was pb2 pressed?
+ rsbne r6, r6, #0 // reverse direction
+
+check_pause:
  TST A1, #0x08 // was PB3 pressed?
  EORNE R7, R7, #1 // toggle pause on or off
 
@@ -55,14 +62,16 @@ check_timer:
  LDR A2, =tim_int_flag // timer flag address
  LDR A1, [A2] // did the timer tick?
  CMP A1, #0
- BEQ IDLE
+ BEQ IDLE // if not => stay still.
  MOV A1, #0
  STR A1, [A2] // clear the flag
- CMP R7, #0
+ CMP R7, #0 // check paused status
  BNE IDLE // stay still while paused
- ADD R5, R5, #1 // move one character left (at each tick)
+ ADD R5, R5, R6 // move one character in the current direction
  CMP R5, #6
- MOVEQ R5, #0 // wrap back to the start when reaches 6
+ MOVEQ R5, #0 // wrap left
+ CMP R5, #0
+ MOVLT R5, #5 // wrap right
  LDR A1, =MSG_C0FFEE
  MOV A2, #6
  BL display_hex // show the shifted message

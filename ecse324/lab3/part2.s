@@ -294,14 +294,24 @@ HEX_CODES:
 .equ BLANK, 0xFF // blank display marker
 MSG_C0FFEE:
  .byte 0xC, 0x0, 0xF, 0xF, 0xE, 0xE // one byte per character
-.balign 4
+MSG_CAFE5:
+ .byte 0xC, 0xA, 0xF, 0xE, 0x5, BLANK
+MSG_CAb5:
+ .byte 0xC, 0xA, 0xB, 0x5, BLANK, BLANK
+MSG_ACE:
+ .byte 0xA, 0xC, 0xE, BLANK, BLANK, BLANK
+MSG_70Ad570015:
+ .byte 0x7, 0x0, 0xA, 0xD, 0x5, 0x7, 0x0, 0x0, 0x1, 0x5
+MSG_CAFE_BEEF_C0FFEE:
+ .byte 0xC, 0xA, 0xF, 0xE, BLANK, 0xB, 0xE, 0xE, 0xF, BLANK, 0xC, 0x0, 0xF, 0xF, 0xE, 0xE
+.balign 4 // to end on word.
 
-display_hex: // A1: message, A2: length, R5: first character
+display_hex: // A1: message, A2: msg length, R5: first character
  PUSH {R6, LR}
  MOV R6, R5 // current character index
  MOV A4, #0x20 // start at HEX5
  dloop:
-  CMP A2, #0
+  CMP A4, #0 // show exactly six HEX displays
   BEQ dloopEnd
   LDRB A3, [A1, R6] // get the current character
   PUSH {A1, A2, A4, LR}
@@ -316,10 +326,9 @@ display_hex: // A1: message, A2: length, R5: first character
  display_next:
   POP {A1, A2, A4, LR}
   ADD R6, R6, #1
-  CMP R6, #6
+  CMP R6, A2
   MOVEQ R6, #0 // wrap to first character
   LSR A4, A4, #1 // move to next HEX display
-  SUB A2, A2, #1
   B dloop
  dloopEnd:
  POP {R6, LR}

@@ -1,27 +1,45 @@
 .global _start
 _start:
- MOV A2, #0xC
- MOV A1, #32
- BL HEX_write_ASM
- MOV A2, #0x0
- MOV A1, #16
- BL HEX_write_ASM
- MOV A2, #0xF
- MOV A1, #8
- BL HEX_write_ASM
- MOV A2, #0xF
- MOV A1, #4
- BL HEX_write_ASM
- MOV A2, #0xE
- MOV A1, #2
- BL HEX_write_ASM
- MOV A2, #0xE
- MOV A1, #1
- BL HEX_write_ASM
+ LDR A1, =MESSAGES
+ MOV A2, #6
+ PUSH {LR}
+ BL display_hex
+ POP {LR}
 loop:
  BL read_slider_switches_ASM
  BL write_LEDs_ASM
  B loop
+
+// One byte per hexadecimal digit, in left-to-right display order.
+MESSAGES:
+MSG_C0FFEE:
+ .byte 0xC, 0x0, 0xF, 0xF, 0xE, 0xE // 6 digits
+MSG_CAFE5:
+ .byte 0xC, 0xA, 0xF, 0xE, 0x5      // 5 digits
+MSG_CAb5:
+ .byte 0xC, 0xA, 0xB, 0x5           // 4 digits
+MSG_ACE:
+ .byte 0xA, 0xC, 0xE                // 3 digits
+
+.balign 4
+
+display_hex: // A1: start addr , A2: num bytes
+ MOV A4, #0x20
+ dloop:
+  CMP A2, #0
+  BEQ dloopEnd
+  LDRB A3, [A1], #1
+  PUSH {A1, A2, A4, LR}
+  MOV A2, A3
+  MOV A1, A4
+  BL HEX_write_ASM
+  POP {A1, A2, A4, LR}
+  LSR A4, A4, #1
+  SUB A2, #1
+  B dloop
+
+ dloopEnd:
+ BX LR
 
 
 // Slider Switches Driver

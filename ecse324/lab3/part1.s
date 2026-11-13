@@ -46,12 +46,14 @@ MSG_BLANK:
 
 .balign 4
 
-display_hex: // A1: start addr , A2: num bytes
+display_hex: // A1: message base, A2: num bytes, R5: rotation offset (0-5)
+ PUSH {R6, LR}
+ MOV R6, R5 // local read index; leave the rotation offset unchanged
  MOV A4, #0x20
  dloop:
   CMP A2, #0
   BEQ dloopEnd
-  LDRB A3, [A1], #1
+  LDRB A3, [A1, R6] // keep the base fixed and read at the current index
   PUSH {A1, A2, A4, LR}
   MOV A2, A3
   MOV A1, A4
@@ -63,10 +65,14 @@ display_hex: // A1: start addr , A2: num bytes
   BL HEX_write_ASM
  display_next:
   POP {A1, A2, A4, LR}
+  ADD R6, R6, #1
+  CMP R6, #6
+  MOVEQ R6, #0 // wrap to the start of the six-byte message
   LSR A4, A4, #1
   SUB A2, A2, #1
   B dloop
  dloopEnd:
+ POP {R6, LR}
  BX LR
 
 

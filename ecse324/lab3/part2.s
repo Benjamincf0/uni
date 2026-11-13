@@ -27,6 +27,13 @@ _start:
  LDR R0, =0xFF200050 // pushbutton KEY base address
  MOV R1, #0xF // set interrupt mask bits
  STR R1, [R0, #0x8] // interrupt mask register (base + 8)
+
+ // Configure timers
+ ldr A1, =50000000
+ mov A2, #(0b001 | 0b010 | 0b100) // starts, auto-reload, interrupts
+ bl ARM_TIM_config_ASM
+ mov r4, #0 // count
+
  // enable IRQ interrupts in the processor
  MOV R0, #0b01010011 // IRQ unmasked, MODE = SVC
  MSR CPSR_c, R0

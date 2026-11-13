@@ -45,18 +45,41 @@ _start:
 IDLE:
  LDR A2, =PB_int_flag // button flag address
  LDR A1, [A2]
+ MOV R9, A1 // keep button bits across driver calls
  CMP A1, #0
  BEQ check_timer // no button event => check timer.
  MOV A3, #0
  STR A3, [A2] // clear the button flag
  CMP R7, #0
- bne check_pause // pb2 does nothing while paused
- tst a1, #0x04 // was pb2 pressed?
- rsbne r6, r6, #0 // reverse direction
+ BNE check_pause // PB0-PB2 do nothing while paused
+ TST R9, #0x04 // PB2 reverses direction
+ RSBNE R6, R6, #0
+
+ MOV R10, R8 // remember the old speed
+ TST R9, #0x02 // PB1 makes it faster
+ BEQ check_slower
+ CMP R8, #4
+ ADDLT R8, R8, #1
+check_slower:
+ TST R9, #0x01 // PB0 makes it slower
+ BEQ apply_speed
+ CMP R8, #0
+ SUBGT R8, R8, #1
+apply_speed:
+ CMP R8, R10
+ BLNE set_speed // update timer and LEDs only if speed changed
 
 check_pause:
- TST A1, #0x08 // was PB3 pressed?
- EORNE R7, R7, #1 // toggle pause on or off
+ TST R9, #0x08 // PB3 toggles pause
+ BEQ check_timer
+ EOR R7, R7, #1
+ CMP R7, #0
+ BNE pause_leds
+ BL show_speed_LEDs // restore speed lights on resume
+ B check_timer
+pause_leds:
+ MOV A1, #0
+ BL write_LEDs_ASM // no lights while paused
 
 check_timer:
  LDR A2, =tim_int_flag // timer flag address

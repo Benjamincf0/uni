@@ -1,3 +1,14 @@
+.section .vectors, "ax"
+ B _start             // reset
+ B SERVICE_UND        // undefined instruction
+ B SERVICE_SVC        // supervisor call
+ B SERVICE_ABT_INST   // instruction abort
+ B SERVICE_ABT_DATA   // data abort
+ .word 0              // unused
+ B SERVICE_IRQ        // interrupt
+ B SERVICE_FIQ        // fast interrupt
+
+.text
 .global _start
 _start:
 ldr A1, =50000000

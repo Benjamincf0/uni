@@ -28,10 +28,10 @@ _start:
  MOV R1, #0xF // set interrupt mask bits
  STR R1, [R0, #0x8] // interrupt mask register (base + 8)
 
- // Configure timers
- ldr A1, =50000000
- mov A2, #(0b001 | 0b010 | 0b100) // starts, auto-reload, interrupts
- bl ARM_TIM_config_ASM
+ // Set initial speed
+ MOV R8, #2 // start at 1/4 second per move
+ BL set_speed
+
  MOV R5, #0 // start at first character
  MOV R6, #1 // +1 = left, -1 = right
  MOV R7, #0 // 0 = moving, 1 = paused
@@ -76,6 +76,20 @@ check_timer:
  MOV A2, #6
  BL display_hex // show the shifted message
  B IDLE
+
+set_speed:
+ PUSH {LR}
+ LDR A3, =SPEED_LOADS
+ LDR A1, [A3, R8, LSL #2] // timer load for this speed
+ MOV A2, #0x07 // run, reload, and interrupt
+ BL ARM_TIM_config_ASM
+ BL show_speed_LEDs
+ POP {PC}
+
+show_speed_LEDs:
+ LDR A3, =SPEED_LEDS
+ LDR A1, [A3, R8, LSL #2]
+ B write_LEDs_ASM
 
 CONFIG_GIC:
  PUSH {LR}

@@ -1,25 +1,47 @@
 .global _start
 _start:
+start:
  MVN R4, #0 // previous switch state (0xFFFFFFFF)
  MOV R5, #0 // rotate offset...
+ MOV R6, #1 // 1 is left, -1 is right rotations
+ MOV R7, #0 // count rotations up to 1023
 loop:
-
- BL read_PB_edgecp_ASM
- TST A1, #0x08 // PB3's bit.
- ADDNE R5, #1 // rotate by 1 more...
- BLNE PB_clear_edgecp_ASM
- CMP R5, #6
- MOVEQ R5, #0
-
  BL read_slider_switches_ASM
  CMP A1, R4
- MOVNE R5, #0
+ MOVNE R5, #0 // a new message starts left-justified
+ MOVNE R7, #0 // reset the count only when the switches change
  MOV R4, A1 // update prev state.
 
- # reset led
- MOV A1, #0 // a new message resets the LED count
+ BL read_PB_edgecp_ASM
+ MOV R9, A1
+ CMP R9, #0
+ BLNE PB_clear_edgecp_ASM
+
+ TST R9, #0x04 // check PB2
+ RSBNE R6, R6, #0 // rev-subtract/toggle +1/-1
+ TST R9, #0x08 // PB3 was pressed => rotation
+ BEQ show_count
+ // Only switch values 0, 1, 2 and 4 select a message.
+ CMP R4, #4
+ BHI show_count
+ CMP R4, #3
+ BEQ show_count // ignore rotate if the display is blank
+
+ ADD R5, R5, R6 // increment/decrement rotate offset
+ // wrap to keep in range.
+ CMP R5, #6
+ MOVEQ R5, #0 // 5 + 1 => 0
+ CMP R5, #0
+ MOVLT R5, #5 // 0 - 1 => 5
+
+ LDR A1, =1023
+ CMP R7, A1
+ ADDLO R7, R7, #1 // keep 1023 once all ten LEDs are lit
+
+show_count:
+ MOV A1, R7
  BL write_LEDs_ASM
- MOV A1, R4 // recover A1 from overwrite.
+ MOV A1, R4 // recover the switch value for message selection
 
  CMP A1, #0x00
  LDREQ A1, =MSG_C0FFEE

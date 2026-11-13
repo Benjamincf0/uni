@@ -225,6 +225,40 @@ HEX_CODES:
  .byte 0b01100110, 0b01101101, 0b01111101, 0b00000111 // 4, 5, 6, 7
  .byte 0b01111111, 0b01101111, 0b01110111, 0b01111100 // 8, 9, A, b
  .byte 0b00111001, 0b01011110, 0b01111001, 0b01110001 
+
+.equ BLANK, 0xFF // blank display marker
+MSG_C0FFEE:
+ .byte 0xC, 0x0, 0xF, 0xF, 0xE, 0xE // one byte per character
+.balign 4
+
+display_hex: // A1: message, A2: length, R5: first character
+ PUSH {R6, LR}
+ MOV R6, R5 // current character index
+ MOV A4, #0x20 // start at HEX5
+ dloop:
+  CMP A2, #0
+  BEQ dloopEnd
+  LDRB A3, [A1, R6] // get the current character
+  PUSH {A1, A2, A4, LR}
+  MOV A2, A3
+  MOV A1, A4
+  CMP A2, #BLANK // blank or digit?
+  BNE display_digit
+  BL HEX_clear_ASM
+  B display_next
+ display_digit:
+  BL HEX_write_ASM
+ display_next:
+  POP {A1, A2, A4, LR}
+  ADD R6, R6, #1
+  CMP R6, #6
+  MOVEQ R6, #0 // wrap to first character
+  LSR A4, A4, #1 // move to next HEX display
+  SUB A2, A2, #1
+  B dloop
+ dloopEnd:
+ POP {R6, LR}
+ BX LR
  
 // HEX Display Driver
 .equ SEG_ADDR1, 0xFF200020

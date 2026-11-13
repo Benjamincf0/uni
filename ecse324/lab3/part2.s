@@ -32,28 +32,28 @@ _start:
  ldr A1, =50000000
  mov A2, #(0b001 | 0b010 | 0b100) // starts, auto-reload, interrupts
  bl ARM_TIM_config_ASM
- mov r4, #0 // count
- // start w 0
- MOV A2, #0 // digit to display
- MOV A1, #1 // hex0
- BL HEX_write_ASM
+ MOV R5, #0 // start at first character
+ LDR A1, =MSG_C0FFEE
+ MOV A2, #6
+ BL display_hex // show C0FFEE
 
  // enable IRQ interrupts in the processor
  MOV R0, #0b01010011 // IRQ unmasked, MODE = SVC
  MSR CPSR_c, R0
 IDLE:
- LDR A2, =tim_int_flag
- LDR A1, [A2]
+ LDR A2, =tim_int_flag // timer flag address
+ LDR A1, [A2] // did the timer tick?
  CMP A1, #0
  BEQ IDLE
  MOV A1, #0
- STR A1, [A2] // mark timer tick as handled.
- ADD R4, R4, #1
- AND R4, R4, #0xf // wraparound..
- MOV A2, R4 // digit to display
- MOV A1, #1 // hex0
- BL HEX_write_ASM
- B IDLE // This is where you write your main program task(s)
+ STR A1, [A2] // clear the flag
+ ADD R5, R5, #1 // move one character left (at each tick)
+ CMP R5, #6
+ MOVEQ R5, #0 // wrap back to the start when reaches 6
+ LDR A1, =MSG_C0FFEE
+ MOV A2, #6
+ BL display_hex // show the shifted message
+ B IDLE
 
 CONFIG_GIC:
  PUSH {LR}

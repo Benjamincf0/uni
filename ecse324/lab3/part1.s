@@ -1,25 +1,48 @@
 .global _start
 _start:
- LDR A1, =MESSAGES
- MOV A2, #6
- PUSH {LR}
- BL display_hex
- POP {LR}
+ MVN R4, #0 // previous switch state (0xFFFFFFFF)
 loop:
  BL read_slider_switches_ASM
+ CMP A1, R4
+ BEQ loop // redraw only when the switches change
+ MOV R4, A1 // update prev state.
+
+ # reset led
+ MOV A1, #0 // a new message resets the LED count
  BL write_LEDs_ASM
+ MOV A1, R4 // recover A1 from overwrite.
+
+ CMP A1, #0x00
+ LDREQ A1, =MSG_C0FFEE
+ BEQ show_message
+ CMP A1, #0x01
+ LDREQ A1, =MSG_CAFE5
+ BEQ show_message
+ CMP A1, #0x02
+ LDREQ A1, =MSG_CAb5
+ BEQ show_message
+ CMP A1, #0x04
+ LDREQ A1, =MSG_ACE
+ BEQ show_message
+ LDR A1, =MSG_BLANK // else just blank all 6...
+
+ show_message: // display_hex w 6 bytes...
+  MOV A2, #6
+  BL display_hex
  B loop
 
-// One byte per hexadecimal digit, in left-to-right display order.
+.equ BLANK, 0xFF // used in display_hex
 MESSAGES:
 MSG_C0FFEE:
  .byte 0xC, 0x0, 0xF, 0xF, 0xE, 0xE // 6 digits
 MSG_CAFE5:
- .byte 0xC, 0xA, 0xF, 0xE, 0x5      // 5 digits
+ .byte 0xC, 0xA, 0xF, 0xE, 0x5, BLANK
 MSG_CAb5:
- .byte 0xC, 0xA, 0xB, 0x5           // 4 digits
+ .byte 0xC, 0xA, 0xB, 0x5, BLANK, BLANK
 MSG_ACE:
- .byte 0xA, 0xC, 0xE                // 3 digits
+ .byte 0xA, 0xC, 0xE, BLANK, BLANK, BLANK
+MSG_BLANK:
+ .byte BLANK, BLANK, BLANK, BLANK, BLANK, BLANK
 
 .balign 4
 
@@ -32,12 +55,17 @@ display_hex: // A1: start addr , A2: num bytes
   PUSH {A1, A2, A4, LR}
   MOV A2, A3
   MOV A1, A4
+  CMP A2, #BLANK // check if we have to clear
+  BNE display_digit
+  BL HEX_clear_ASM // clear hex
+  B display_next
+ display_digit:
   BL HEX_write_ASM
+ display_next:
   POP {A1, A2, A4, LR}
   LSR A4, A4, #1
-  SUB A2, #1
+  SUB A2, A2, #1
   B dloop
-
  dloopEnd:
  BX LR
 

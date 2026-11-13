@@ -72,6 +72,9 @@ CONFIG_GIC:
  MOV R0, #73 // KEY port (Interrupt ID = 73)
  MOV R1, #1 // this field is a bit-mask; bit 0 targets cpu0
  BL CONFIG_INTERRUPT
+ MOV R0, #29 // A9 private timer (ID 29)
+ MOV R1, #1 // this field is a bit-mask; bit 0 targets cpu0
+ BL CONFIG_INTERRUPT
 /* configure the GIC CPU Interface */
  LDR R0, =0xFFFEC100 // base address of CPU Interface
 /* Set Interrupt Priority Mask Register (ICCPMR) */
@@ -85,7 +88,7 @@ CONFIG_GIC:
 * This enables forwarding of interrupts to the CPU Interface(s) */
  LDR R0, =0xFFFED000
  STR R1, [R0]
- POP {PC}
+ POP {PC} // weird way to return...
 
 /*
 * Configure registers in the GIC for an individual Interrupt ID

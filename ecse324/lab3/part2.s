@@ -369,6 +369,12 @@ write_LEDs_ASM:
  STR A1, [A2]
  BX LR
 
+.equ SW_ADDR, 0xFF200040
+read_slider_switches_ASM:
+ LDR A2, =SW_ADDR
+ LDR A1, [A2]
+ BX LR
+
 .equ PB_EDGE_ADDR, 0xFF20005C
 read_PB_edgecp_ASM:
  LDR A2, =PB_EDGE_ADDR // load the address of push button state

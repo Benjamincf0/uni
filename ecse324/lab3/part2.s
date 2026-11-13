@@ -33,40 +33,27 @@ _start:
  mov A2, #(0b001 | 0b010 | 0b100) // starts, auto-reload, interrupts
  bl ARM_TIM_config_ASM
  mov r4, #0 // count
+ // start w 0
+ MOV A2, #0 // digit to display
+ MOV A1, #1 // hex0
+ BL HEX_write_ASM
 
  // enable IRQ interrupts in the processor
  MOV R0, #0b01010011 // IRQ unmasked, MODE = SVC
  MSR CPSR_c, R0
 IDLE:
+ LDR A2, =tim_int_flag
+ LDR A1, [A2]
+ CMP A1, #0
+ BEQ IDLE
+ MOV A1, #0
+ STR A1, [A2] // mark timer tick as handled.
+ ADD R4, R4, #1
+ AND R4, R4, #0xf // wraparound..
+ MOV A2, R4 // digit to display
+ MOV A1, #1 // hex0
+ BL HEX_write_ASM
  B IDLE // This is where you write your main program task(s)
-
-
-
-ldr A1, =50000000
-mov A2, #0x03
-bl ARM_TIM_config_ASM
-mov r4, #0 // count
-
-
-// display first
-mov a2, r4
-mov a1, #1
-bl HEX_write_ASM
-
-poll:
-bl ARM_TIM_read_INT_ASM
-TST A1, #1
-beq poll // if not F, keep polling
-
-bl ARM_TIM_clear_INT_ASM // clear F
-
-add r4, r4, #1
-and r4, r4, #0xf // wraps when it reaches 15
-mov a2, r4
-mov a1, #1
-bl HEX_write_ASM
-
-b poll
 
 CONFIG_GIC:
  PUSH {LR}

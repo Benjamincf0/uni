@@ -151,6 +151,11 @@ SERVICE_IRQ:
  If the ID is not recognized, branch to UNEXPECTED
  See the assembly example provided in the DE1-SoC Computer Manual
  on page 46 */
+Tim_check:
+ CMP R5, #29
+ BNE Pushbutton_check
+ BL ARM_TIM_ISR
+ B EXIT_IRQ
 Pushbutton_check:
  CMP R5, #73
 UNEXPECTED:
@@ -192,17 +197,30 @@ ARM_TIM_clear_INT_ASM:
  bx LR
 
 
+// Interrupt Service Routines (ISRs)
+.data
+tim_int_flag: .word 0
+.text
+ARM_TIM_ISR:
+ PUSH {LR}
+ bl ARM_TIM_clear_INT_ASM // clear F
+
+ LDR A2, =tim_int_flag
+ MOV A1, #1
+ STR A1, [A2]
+
+ POP {LR}
+ BX LR
+
 .data
 PB_int_flag: .word 0
 .text
-
 KEY_ISR:
  PUSH {LR}
  BL read_PB_edgecp_ASM
  LDR A2, =PB_int_flag
  STR A1, [A2]
  BL PB_clear_edgecp_ASM
-END_KEY_ISR:
  POP {LR}
  BX LR
 

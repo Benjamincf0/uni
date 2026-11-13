@@ -1,16 +1,43 @@
 .section .vectors, "ax"
- B _start             // reset
- B SERVICE_UND        // undefined instruction
- B SERVICE_SVC        // supervisor call
- B SERVICE_ABT_INST   // instruction abort
- B SERVICE_ABT_DATA   // data abort
- .word 0              // unused
- B SERVICE_IRQ        // interrupt
- B SERVICE_FIQ        // fast interrupt
+B _start // reset vector
+B SERVICE_UND // undefined instruction vector
+B SERVICE_SVC // software interrupt vector
+B SERVICE_ABT_INST // aborted prefetch vector
+B SERVICE_ABT_DATA // aborted data vector
+.word 0 // unused vector
+B SERVICE_IRQ // IRQ interrupt vector
+B SERVICE_FIQ // FIQ interrupt vector
 
 .text
 .global _start
 _start:
+.text
+.global _start
+_start:
+ /* Set up stack pointers for IRQ and SVC processor modes */
+ MOV R1, #0b11010010 // interrupts masked, MODE = IRQ
+ MSR CPSR_c, R1 // change to IRQ mode
+ LDR SP, =0xFFFFFFFF - 3 // set IRQ stack to A9 on-chip memory
+ /* Change to SVC (supervisor) mode with interrupts disabled */
+ MOV R1, #0b11010011 // interrupts masked, MODE = SVC
+ MSR CPSR, R1 // change to supervisor mode
+ LDR SP, =0x3FFFFFFF - 3 // set SVC stack to top of DDR3 memory
+ BL CONFIG_GIC // configure the ARM GIC
+ // NOTE: write to the pushbutton KEY interrupt mask register
+ // Or, you can call enable_PB_INT_ASM subroutine from previous task
+ // to enable interrupt for ARM A9 private timer,
+ // use ARM_TIM_config_ASM subroutine
+ LDR R0, =0xFF200050 // pushbutton KEY base address
+ MOV R1, #0xF // set interrupt mask bits
+ STR R1, [R0, #0x8] // interrupt mask register (base + 8)
+ // enable IRQ interrupts in the processor
+ MOV R0, #0b01010011 // IRQ unmasked, MODE = SVC
+ MSR CPSR_c, R0
+IDLE:
+ B IDLE // This is where you write your main program task(s)
+
+
+
 ldr A1, =50000000
 mov A2, #0x03
 bl ARM_TIM_config_ASM

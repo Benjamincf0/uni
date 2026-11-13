@@ -35,42 +35,82 @@ _start:
  MOV R5, #0 // start at first character
  MOV R6, #1 // +1 = left, -1 = right
  MOV R7, #0 // 0 = moving, 1 = paused
- LDR A1, =MSG_C0FFEE
- MOV A2, #6
+ MOV R4, #6 // current message length. luckily display_hex supports variable length ;)
+ LDR R9, =MSG_C0FFEE // current message
+ MVN R10, #0 // force the first switch read
+ MOV A1, R9
+ MOV A2, R4
  BL display_hex // show C0FFEE
 
  // enable IRQ interrupts in the processor
  MOV R0, #0b01010011 // IRQ unmasked, MODE = SVC
  MSR CPSR_c, R0
 IDLE:
+ BL read_slider_switches_ASM
+ CMP A1, R10
+ BEQ check_buttons
+ MOV R10, A1
+ MOV R12, #6 // length of the new message
+ CMP R10, #0x00
+ LDREQ R9, =MSG_C0FFEE
+ BEQ new_message
+ CMP R10, #0x01
+ LDREQ R9, =MSG_CAFE5
+ BEQ new_message
+ CMP R10, #0x02
+ LDREQ R9, =MSG_CAb5
+ BEQ new_message
+ CMP R10, #0x04
+ LDREQ R9, =MSG_ACE
+ BEQ new_message
+ CMP R10, #0x08
+ LDREQ R9, =MSG_70Ad570015
+ MOVEQ R12, #10
+ BEQ new_message
+ CMP R10, #0x10
+ LDREQ R9, =MSG_CAFE_BEEF_C0FFEE
+ MOVEQ R12, #16
+ BEQ new_message
+ MOV A1, #0x3F // invalid switches: clear all six HEX displays
+ BL HEX_clear_ASM
+ B check_buttons
+
+new_message:
+ MOV R4, R12
+ MOV R5, #0 // show msg left aligned
+ MOV A1, R9
+ MOV A2, R4
+ BL display_hex
+
+check_buttons:
  LDR A2, =PB_int_flag // button flag address
  LDR A1, [A2]
- MOV R9, A1 // keep button bits across driver calls
+ MOV R11, A1 // keep button bits across driver calls
  CMP A1, #0
  BEQ check_timer // no button event => check timer.
  MOV A3, #0
  STR A3, [A2] // clear the button flag
  CMP R7, #0
  BNE check_pause // PB0-PB2 do nothing while paused
- TST R9, #0x04 // PB2 reverses direction
+ TST R11, #0x04 // PB2 reverses direction
  RSBNE R6, R6, #0
 
- MOV R10, R8 // remember the old speed
- TST R9, #0x02 // PB1 makes it faster
+ MOV A3, R8 // remember the old speed
+ TST R11, #0x02 // PB1 makes it faster
  BEQ check_slower
  CMP R8, #4
  ADDLT R8, R8, #1
 check_slower:
- TST R9, #0x01 // PB0 makes it slower
+ TST R11, #0x01 // PB0 makes it slower
  BEQ apply_speed
  CMP R8, #0
  SUBGT R8, R8, #1
 apply_speed:
- CMP R8, R10
+ CMP R8, A3
  BLNE set_speed // update timer and LEDs only if speed changed
 
 check_pause:
- TST R9, #0x08 // PB3 toggles pause
+ TST R11, #0x08 // PB3 toggles pause
  BEQ check_timer
  EOR R7, R7, #1
  CMP R7, #0
@@ -91,12 +131,20 @@ check_timer:
  CMP R7, #0 // check paused status
  BNE IDLE // stay still while paused
  ADD R5, R5, R6 // move one character in the current direction
- CMP R5, #6
+ CMP R5, R4
  MOVEQ R5, #0 // wrap left
  CMP R5, #0
- MOVLT R5, #5 // wrap right
- LDR A1, =MSG_C0FFEE
- MOV A2, #6
+ SUBLT R5, R4, #1 // wrap right
+ CMP R10, #16
+ BHI IDLE
+ CMP R10, #0
+ BEQ draw_message
+ SUB A1, R10, #1
+ TST A1, R10 // multiple switches are invalid
+ BNE IDLE
+draw_message:
+ MOV A1, R9
+ MOV A2, R4
  BL display_hex // show the shifted message
  B IDLE
 

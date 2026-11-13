@@ -33,6 +33,7 @@ _start:
  mov A2, #(0b001 | 0b010 | 0b100) // starts, auto-reload, interrupts
  bl ARM_TIM_config_ASM
  MOV R5, #0 // start at first character
+ MOV R7, #0 // 0 = moving, 1 = paused
  LDR A1, =MSG_C0FFEE
  MOV A2, #6
  BL display_hex // show C0FFEE
@@ -41,12 +42,24 @@ _start:
  MOV R0, #0b01010011 // IRQ unmasked, MODE = SVC
  MSR CPSR_c, R0
 IDLE:
+ LDR A2, =PB_int_flag // button flag address
+ LDR A1, [A2]
+ CMP A1, #0
+ BEQ check_timer // no button event => check timer.
+ MOV A3, #0
+ STR A3, [A2] // clear the button flag
+ TST A1, #0x08 // was PB3 pressed?
+ EORNE R7, R7, #1 // toggle pause on or off
+
+check_timer:
  LDR A2, =tim_int_flag // timer flag address
  LDR A1, [A2] // did the timer tick?
  CMP A1, #0
  BEQ IDLE
  MOV A1, #0
  STR A1, [A2] // clear the flag
+ CMP R7, #0
+ BNE IDLE // stay still while paused
  ADD R5, R5, #1 // move one character left (at each tick)
  CMP R5, #6
  MOVEQ R5, #0 // wrap back to the start when reaches 6

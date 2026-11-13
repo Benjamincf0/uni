@@ -1,10 +1,19 @@
 .global _start
 _start:
  MVN R4, #0 // previous switch state (0xFFFFFFFF)
+ MOV R5, #0 // rotate offset...
 loop:
+
+ BL read_PB_edgecp_ASM
+ TST A1, #0x08 // PB3's bit.
+ ADDNE R5, #1 // rotate by 1 more...
+ BLNE PB_clear_edgecp_ASM
+ CMP R5, #6
+ MOVEQ R5, #0
+
  BL read_slider_switches_ASM
  CMP A1, R4
- BEQ loop // redraw only when the switches change
+ MOVNE R5, #0
  MOV R4, A1 // update prev state.
 
  # reset led

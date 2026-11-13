@@ -320,6 +320,12 @@ HEX_clear_ASM:
  MOV A2, #0x00
  B HEX_helper_ASM_
 
+.equ LED_ADDR, 0xFF200000
+write_LEDs_ASM:
+ LDR A2, =LED_ADDR
+ STR A1, [A2]
+ BX LR
+
 .equ PB_EDGE_ADDR, 0xFF20005C
 read_PB_edgecp_ASM:
  LDR A2, =PB_EDGE_ADDR // load the address of push button state

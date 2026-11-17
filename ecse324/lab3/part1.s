@@ -17,15 +17,16 @@ loop:
  CMP R9, #0
  BLNE PB_clear_edgecp_ASM
 
- TST R9, #0x04 // check PB2
- RSBNE R6, R6, #0 // rev-subtract/toggle +1/-1
- TST R9, #0x08 // PB3 was pressed => rotation
- BEQ show_count
  // Only switch values 0, 1, 2 and 4 select a message.
  CMP R4, #4
  BHI show_count
  CMP R4, #3
- BEQ show_count // ignore rotate if the display is blank
+ BEQ show_count // ignore PB2 and PB3 if the display is blank
+
+ TST R9, #0x04 // check PB2
+ RSBNE R6, R6, #0 // rev-subtract/toggle +1/-1
+ TST R9, #0x08 // PB3 was pressed => rotation
+ BEQ show_count
 
  ADD R5, R5, R6 // increment/decrement rotate offset
  // wrap to keep in range.

@@ -11,6 +11,7 @@ B SERVICE_FIQ // FIQ interrupt vector
 .text
 .global _start
 _start:
+start:
  /* Set up stack pointers for IRQ and SVC processor modes */
  MOV R1, #0b11010010 // interrupts masked, MODE = IRQ
  MSR CPSR_c, R1 // change to IRQ mode
@@ -24,9 +25,8 @@ _start:
  // Or, you can call enable_PB_INT_ASM subroutine from previous task
  // to enable interrupt for ARM A9 private timer,
  // use ARM_TIM_config_ASM subroutine
- LDR R0, =0xFF200050 // pushbutton KEY base address
- MOV R1, #0xF // set interrupt mask bits
- STR R1, [R0, #0x8] // interrupt mask register (base + 8)
+ MOV A1, #0xF // all four pushbuttons
+ BL enable_PB_INT_ASM // set their interrupt mask bits
 
  // Set initial speed
  MOV R8, #2 // start at 1/4 second per move
@@ -430,10 +430,37 @@ read_slider_switches_ASM:
  LDR A1, [A2]
  BX LR
 
+// Push Button Driver
+.equ PB_ADDR, 0xFF200050
+read_PB_data_ASM:
+ LDR A2, =PB_ADDR // load the address of push button state
+ LDR A1, [A2] // read push button state
+ BX LR
+
+PB_data_is_pressed_ASM: // A1: button index (one-hot)
+ MOV A2, A1 // save index.
+ PUSH {A2, LR}
+ BL read_PB_data_ASM // writes data into A1.
+ POP {A2, LR}
+ TST A2, A1 // check the ith button is ON.
+ MOVEQ A1, #0
+ MOVNE A1, #1
+ BX LR
+
 .equ PB_EDGE_ADDR, 0xFF20005C
 read_PB_edgecp_ASM:
  LDR A2, =PB_EDGE_ADDR // load the address of push button state
  LDR A1, [A2] // read push button state
+ BX LR
+
+PB_edgecp_is_pressed_ASM: // A1: button index (one-hot)
+ MOV A2, A1 // save index.
+ PUSH {A2, LR}
+ BL read_PB_edgecp_ASM // writes data into A1.
+ POP {A2, LR}
+ TST A2, A1 // check the ith button is ON.
+ MOVEQ A1, #0
+ MOVNE A1, #1
  BX LR
 
 PB_clear_edgecp_ASM:
@@ -441,4 +468,19 @@ PB_clear_edgecp_ASM:
  BL read_PB_edgecp_ASM
  POP {LR}
  STR A1, [A2]
+ BX LR
+
+.equ PB_INT_ADDR, 0xFF200058
+enable_PB_INT_ASM: // A1: button indices
+ LDR A2, =PB_INT_ADDR // load the address
+ LDR A3, [A2]
+ ORR A3, A3, A1
+ STR A3, [A2]
+ BX LR
+
+disable_PB_INT_ASM: // A1: button indices
+ LDR A2, =PB_INT_ADDR // load the address
+ LDR A3, [A2]
+ BIC A3, A3, A1 // A3 = A3 AND NOT A1
+ STR A3, [A2]
  BX LR

@@ -324,7 +324,7 @@ KEY_ISR:
  BX LR
 
 
-// Speed levels 0-4: slowest to fastest.
+// Speed levels: 0 to 4
 SPEED_LOADS:
  .word 200000000, 100000000, 50000000, 25000000, 12500000
 SPEED_LEDS:

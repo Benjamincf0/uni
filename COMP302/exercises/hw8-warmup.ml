@@ -285,6 +285,7 @@ let guard (ok : bool) : unit parser = if ok then of_value () else fail
 (* `int_digits` is defined in the prelude and parses an `int`. *)
 (* `comma` parses a single ',' character and nothing else. *)
 let comma : char parser = satisfy ((=) ',')
+let nl : char parser = satisfy ((=) '\n')
 
 (* `text` parses all of the input up to the next ',' character or end of line,
    but not the ',' character. We used `satisfy_many` for this. 
@@ -320,17 +321,17 @@ let parse_isb = run (between (of_value ()) eof isb)
 
 (* csv_int should parse an int, and wrap it up in a `Csv_int` constructor.
    You should use `map` to accomplish this. *)
-let csv_int = parser_not_implemented
+let csv_int = map (fun n -> Csv_int n) int_digits
 (* csv_string is like `text` above, but wraps it up in `Csv_string` constructor.
    You should use both `map` and `text` for this - don't reinvent the wheel! *)
-let csv_string = parser_not_implemented
+let csv_string = map (fun s -> Csv_string s) text
 (* csv_item parses a CSV Item: either an int, or a string.
    Be careful to not parse "5" as `Csv_string "5"`! *)
-let csv_item = parser_not_implemented
+let csv_item = first_of_2 csv_int csv_string
 
 (* Each field in the CSV is actually optional. How to parse that?
    Why with the parser named `optional` of course! *)
-let field = parser_not_implemented
+let field = optional csv_item
 
 (* Rows are a little bit more complicated. The _first_ row of a CSV is special,
    and consists of headers for each column. The result of parsing that will be
@@ -342,7 +343,7 @@ let field = parser_not_implemented
 (* First, the header: this should be comma-separated `text`. For this, you should
    use the `sep_by_1` function from the Prelude, as well as your `text` and
    `comma` parsers. *)
-let header = parser_not_implemented
+let header = sep_by_1 text comma
 
 (* Now, other rows: a comma-separated sequence of fields. Then you can combine
    the fields with the names from the header using `List.combine`.
@@ -350,11 +351,15 @@ let header = parser_not_implemented
    Once you have that working, also ensure that the number of fields matches the
    number of header names. Otherwise, bad input will crash your program! *)
 
-let row header_names = parser_not_implemented
+let row header_names = sep_by_1 field comma |*> fun fields -> 
+    guard (List.length header_names = List.length fields) |*> fun () ->
+      of_value (List.combine header_names fields)
 
 (* Finally, put it together into a CSV parser. A CSV is a header, followed
    by many newlines and rows. *)
-let csv = parser_not_implemented
+let csv = header |*> fun h_names -> many (nl |>> row h_names)
 
 (** DO NOT Change This Definition *)
 let parse_csv = run (between (of_value ()) eof csv)
+
+

@@ -292,7 +292,7 @@ let comma : char parser = satisfy ((=) ',')
    this check for you as an example. *)
 let allowed_in_text c = c <> ',' && c <> '\n'
 let text : string parser =
-  parser_not_implemented |*> fun result ->
+  satisfy_many allowed_in_text |*> fun result ->
     guard (String.length result > 0) |>
     const_map result
 
@@ -301,17 +301,17 @@ let text : string parser =
    To do that, we wrote two smaller helpers, for handling each case.
    Those parsers are implemented with `const_map` and `accept_string`. *)
 let parse_true : bool parser =
-  const_map (raise NotImplemented) (accept_string "true")
+  const_map (true) (accept_string "true")
 let parse_false : bool parser =
-  parser_not_implemented
+  const_map false (accept_string "false") 
 (* accepts either "true" or "false." Use `first_of_2` for this. *)
-let bool : bool parser = parser_not_implemented
+let bool : bool parser = first_of_2 parse_true parse_false
 
 (* Now put everything together, to parse syntax like the following:
     55,some text,true
   That is, `run isb "55,some text,true"` should return `(55, "some text", true)` *)
 (* Use |*> to assemble the pieces. *)
-let isb = parser_not_implemented
+let isb = int_digits |*> fun n -> comma |>> text |*> fun s -> comma |>> bool |*> fun b -> of_value (n, s, b)
 
 (** DO NOT Change This Definition *)
 let parse_isb = run (between (of_value ()) eof isb)
@@ -358,5 +358,3 @@ let csv = parser_not_implemented
 
 (** DO NOT Change This Definition *)
 let parse_csv = run (between (of_value ()) eof csv)
-
-

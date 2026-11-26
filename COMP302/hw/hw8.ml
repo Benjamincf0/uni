@@ -309,7 +309,7 @@ let rec tree_parser i =
     first_of_2
       (const_map Leaf (symbol "."))
       ((** What should we do to parse a [Node] tree? *)
-        raise NotImplemented)
+        symbol "(" |>> tree_parser |*> fun l -> symbol "<" |>> int_digits |*> fun v -> symbol ">" |>> tree_parser |*> fun r -> symbol ")" |>> of_value (Node(l, v, r)))
   in
   tree_parser_impl i
 

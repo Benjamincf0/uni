@@ -590,7 +590,7 @@ let rec free_vars (e : exp) : IdentSet.t =
         (free_vars e2 |> IdentSet.remove x |> IdentSet.remove y)
         (free_vars e1)
 
-  | Fn (x, tOpt, e') -> free_vars e'
+  | Fn (x, tOpt, e') -> free_vars e' |> IdentSet.remove x
   | Apply (e1, e2) -> IdentSet.union (free_vars e1) (free_vars e2)
 
   | Rec (f, tOpt, e') -> IdentSet.remove f (free_vars e') (* covers rec calls *)

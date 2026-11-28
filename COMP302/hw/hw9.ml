@@ -618,17 +618,22 @@ let rec subst ((d, z) : exp * ident) (e : exp) : exp =
   | PrimUop (uop, e') -> PrimUop (uop, subst (d, z) e')
 
   | ConstB _ -> e
-  | If (e', e1, e2) -> raise NotImplemented
+  | If (e', e1, e2) -> If (subst (d, z) e',subst (d, z) e1,subst (d, z) e2)
 
   | Comma (e1, e2) -> Comma (subst (d, z) e1, subst (d, z) e2)
-  | LetComma (x, y, e1, e2) -> raise NotImplemented
+  | LetComma (x, y, e1, e2) -> 
+        let (x', e2') = rename (x, e2) in
+        let (y', e2'') = rename (y, e2') in
+        LetComma (x', y', subst (d, z) e1, subst (d, z) e2'')
 
-  | Fn (x, tOpt, e') -> raise NotImplemented
-  | Apply (e1, e2) -> raise NotImplemented
+  | Fn (x, tOpt, e') ->
+        let (x', e'') = rename (x, e') in
+        Fn (x', tOpt, subst (d, z) e'')
+  | Apply (e1, e2) -> Apply (subst (d, z) e1, subst (d, z) e2)
 
-  | Rec (f, tOpt, e') -> raise NotImplemented
+  | Rec (f, tOpt, e') -> let (f', e'') = rename (f, e') in Rec (f', tOpt, subst (d, z) e'')
 
-  | Let (x, e1, e2) -> raise NotImplemented
+  | Let (x, e1, e2) -> let (x', e2') = rename (x, e2) in Let (x', subst (d, z) e1, subst (d, z) e2')
   | Var x ->
       if x = z
       then d
